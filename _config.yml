@@ -7,7 +7,7 @@ permalink:        pretty
 relative_permalinks: true
 
 # Setup
-title:            Panic
+title:            Don't Panic
 tagline:          'Thoughts, stories and ideas'
 description:      'Thoughts, stories and ideas'
 url:              
@@ -15,7 +15,7 @@ baseurl:          /
 
 author:
   name:           'Junaid K'
-  url:            https://twitter.com/mdo
+  url:            https://twitter.com/Junaid_kld
 
 paginate:         5
 
