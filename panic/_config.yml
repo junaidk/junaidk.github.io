@@ -1,0 +1,26 @@
+# Dependencies
+markdown:         redcarpet
+highlighter:      pygments
+
+# Permalinks
+permalink:        pretty
+relative_permalinks: true
+
+# Setup
+title:            Panic
+tagline:          'Thoughts, stories and ideas'
+description:      'Thoughts, stories and ideas'
+url:              
+baseurl:          /
+
+author:
+  name:           'Junaid K'
+  url:            https://twitter.com/mdo
+
+paginate:         5
+
+# Custom vars
+version:          2.1.0
+
+github:
+  repo:           https://github.com/poole/hyde
