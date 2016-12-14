@@ -1,6 +1,6 @@
 # Dependencies
 markdown:         redcarpet
-highlighter:      pygments
+highlighter:      pygments.rb
 
 # Permalinks
 permalink:        pretty
@@ -17,6 +17,7 @@ author:
   name:           'Junaid K'
   url:            https://twitter.com/Junaid_kld
 
+gems: [jekyll-paginate]
 paginate:         5
 
 # Custom vars
@@ -24,3 +25,5 @@ version:          2.1.0
 
 github:
   repo:           https://github.com/junaidk
+
+relative_permalinks: false
