@@ -25,6 +25,14 @@ Restart mongo db with new configuration.
 ### enable basic authentication 
 Start MongoDB without access control and create the administrator user.
 
+uses this command to commect to ssl enabled mongo using mong-shell
+
+```bash
+mongo --ssl --sslAllowInvalidCertificates 
+```
+
+then run the following script 
+
 ```javascript
 use admin
 
@@ -38,7 +46,13 @@ db.createUser(
 
 ```
 
-add the following property in mongod.conf (default location for mongod.conf is /etc/mongod.conf)
+or in One liner form
+
+```bash
+mongo admin --ssl --sslAllowInvalidCertificates  --eval "db.createUser( { user: "<admin-user>", pwd: "<password>", roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] } )"
+```
+
+add the following property in mongod.conf to enable autorization. (default location for mongod.conf is /etc/mongod.conf)
 
 ```yaml
 security:
