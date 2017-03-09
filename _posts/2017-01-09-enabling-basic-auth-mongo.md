@@ -64,7 +64,7 @@ Restart mongo db with new configuration (with access control).
 Connect to mongodb instance and authenticate as the user administrator. Add non previlaged users to manage and control access to different DB's.
 
 ```bash
-mongo --port 27017 -u "root" -p "pass" --authenticationDatabase "admin"
+mongo --ssl --sslAllowInvalidCertificates --port 27017 -u "root" -p "pass" --authenticationDatabase "admin"
 ```
 
 ```javascript
