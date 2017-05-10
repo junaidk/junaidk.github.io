@@ -53,3 +53,16 @@ docker run command for starting Jenkins container
 
 ```
 
+------------------
+### Update
+
+In case above is not working
+
+Run image as 
+
+```bash 
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker jenkins
+```
+
+
+
