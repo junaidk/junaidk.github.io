@@ -16,6 +16,9 @@ Here is the list.
 docker run -h transmission --name transmission -e USER=<user> -e PASSWORD=<password> -e IP_WHITELIST=*.*.*.* -d -v /home/ubuntu/downloads:/downloads -t -i -p 9091:9091 -p 51415:51413/udp -p 51415:51413/tcp transmission
 ```
 
+change permissions of download folder (on host) to 755 and make non-root user the owner of the download foler.
+
+
 ### youtube dl 
 [Youtube-dl-WebUI](https://github.com/p1rox/Youtube-dl-WebUI)
 
