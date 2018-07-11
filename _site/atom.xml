@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+ <title>Don't Panic</title>
+ <link href="http://localhost:4000/atom.xml" rel="self"/>
+ <link href="http://localhost:4000/"/>
+ <updated>2018-07-11T19:03:39+05:00</updated>
+ <id>http://localhost:4000</id>
+ <author>
+   <name>Junaid K</name>
+   <email></email>
+ </author>
+
+ 
+ <entry>
+   <title>Enable Basic Authentication and SSL on a Mongo DB instance</title>
+   <link href="http://localhost:4000/2017/01/09/enabling-basic-auth-mongo/"/>
+   <updated>2017-01-09T00:00:00+05:00</updated>
+   <id>http://localhost:4000/2017/01/09/enabling-basic-auth-mongo</id>
+   <content type="html">&lt;h3 id=&quot;creating-ssl-key-and-certificate-for-enabling-ssl&quot;&gt;creating ssl key and certificate for enabling ssl&lt;/h3&gt;
+&lt;p&gt;Run the following command to generate ssl certificate and key file.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;openssl req -newkey rsa:2048 -new -x509 -days 365 -nodes -out mongodb-cert.crt -keyout mongodb-cert.key
+cat mongodb-cert.key mongodb-cert.crt &amp;gt; mongodb.pem
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;add the following property to mongod.conf to enable ssl&lt;/p&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# network interfaces&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;ssl&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;requireSSL&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;PEMKeyFile&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;lt;path to pem file created above&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Restart mongo db with new configuration.&lt;/p&gt;
+
+&lt;h3 id=&quot;enable-basic-authentication&quot;&gt;enable basic authentication&lt;/h3&gt;
+&lt;p&gt;Start MongoDB without access control and create the administrator user.&lt;/p&gt;
+
+&lt;p&gt;uses this command to commect to ssl enabled mongo using mong-shell&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mongo &lt;span class=&quot;nt&quot;&gt;--ssl&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--sslAllowInvalidCertificates&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;then run the following script&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;admin&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;createUser&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&amp;lt;admin-user&amp;gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;pwd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&amp;lt;password&amp;gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;roles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;role&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;userAdminAnyDatabase&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;admin&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;or in One liner form&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mongo admin &lt;span class=&quot;nt&quot;&gt;--ssl&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--sslAllowInvalidCertificates&lt;/span&gt;  &lt;span class=&quot;nt&quot;&gt;--eval&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;db.createUser( { user: &quot;&lt;/span&gt;&amp;lt;admin-user&amp;gt;&lt;span class=&quot;s2&quot;&gt;&quot;, pwd: &quot;&lt;/span&gt;&amp;lt;password&amp;gt;&lt;span class=&quot;s2&quot;&gt;&quot;, roles: [ { role: &quot;&lt;/span&gt;userAdminAnyDatabase&lt;span class=&quot;s2&quot;&gt;&quot;, db: &quot;&lt;/span&gt;admin&lt;span class=&quot;s2&quot;&gt;&quot; } ] } )&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;add the following property in mongod.conf to enable autorization. (default location for mongod.conf is /etc/mongod.conf)&lt;/p&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;security&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;authorization&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;enabled&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Restart mongo db with new configuration (with access control).&lt;/p&gt;
+
+&lt;p&gt;Connect to mongodb instance and authenticate as the user administrator. Add non previlaged users to manage and control access to different DB’s.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mongo &lt;span class=&quot;nt&quot;&gt;--ssl&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--sslAllowInvalidCertificates&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--port&lt;/span&gt; 27017 &lt;span class=&quot;nt&quot;&gt;-u&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;root&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;pass&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--authenticationDatabase&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;admin&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;admin&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;createUser&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&amp;lt;user&amp;gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;pwd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&amp;lt;password&amp;gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;roles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+         &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;role&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;readWrite&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;test&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If you have followed the above steps, you have successfully added a new user to your db. Try logging in with the new user and try addind document to some db.&lt;/p&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Set Up Jenkins to Build Docker Images From Inside A Docker Container</title>
+   <link href="http://localhost:4000/2016/12/14/jenkins-docker-build/"/>
+   <updated>2016-12-14T00:00:00+05:00</updated>
+   <id>http://localhost:4000/2016/12/14/jenkins-docker-build</id>
+   <content type="html">&lt;p&gt;For one of my projects I needed to setup a jenkins environment for autobuild. I pulled a jenkins docker image form docker hub and started a jenkins container. My next requiremt was to build docker image of the project I was building inside jenkings. But it is difficult and complicated to install docker inside a container. So I mounted docker binary inside the container thinking it will do the job. But that was not the case. I had to mount all the libraries which docker runtime depend on. After I mounted all the libraries and docker binary inside the container, I was able build and run docker images from inside the container.&lt;/p&gt;
+
+&lt;p&gt;Here is the docker file which I used to build Jenkins Image&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Dockerfile&quot;&gt;
+	FROM jenkins:latest
+
+	USER root
+	RUN apt-get update \
+	      &amp;amp;&amp;amp; apt-get install -y sudo \
+	      &amp;amp;&amp;amp; rm -rf /var/lib/apt/lists/*
+	RUN echo &quot;jenkins ALL=NOPASSWD: ALL&quot; &amp;gt;&amp;gt; /etc/sudoers
+
+	USER jenkins
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Libraries needed to run docker inside a container&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	/usr/lib/x86_64-linux-gnu/libapparmor.so.1
+	/lib/x86_64-linux-gnu/libsystemd-journal.so.0
+	/lib/x86_64-linux-gnu/libcgmanager.so.0
+	/lib/x86_64-linux-gnu/libnih.so.1 
+	/lib/x86_64-linux-gnu/libnih-dbus.so.1 
+	/lib/x86_64-linux-gnu/libgcrypt.so.11
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;docker run command for starting Jenkins container&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+	docker run &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; jenkins &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 8080:8080 &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 50000:50000 
+	&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /var/run/docker.sock:/var/run/docker.sock 
+	&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;which docker&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;:/usr/bin/docker 
+	&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /usr/lib/x86_64-linux-gnu/libapparmor.so.1:/usr/lib/x86_64-linux-gnu/libapparmor.so.1 
+	&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /lib/x86_64-linux-gnu/libsystemd-journal.so.0:/lib/x86_64-linux-gnu/libsystemd-journal.so.0 
+	&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /lib/x86_64-linux-gnu/libcgmanager.so.0:/lib/x86_64-linux-gnu/libcgmanager.so.0 
+	&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /lib/x86_64-linux-gnu/libnih.so.1:/lib/x86_64-linux-gnu/libnih.so.1 
+	&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /lib/x86_64-linux-gnu/libnih-dbus.so.1:/lib/x86_64-linux-gnu/libnih-dbus.so.1 
+	&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /lib/x86_64-linux-gnu/libgcrypt.so.11:/lib/x86_64-linux-gnu/libgcrypt.so.11 
+	&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /var/jenkins-home:/var/jenkins_home  
+	jenkins
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;
+&lt;h3 id=&quot;update&quot;&gt;Update&lt;/h3&gt;
+
+&lt;p&gt;In case above is not working&lt;/p&gt;
+
+&lt;p&gt;Run image as&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /var/run/docker.sock:/var/run/docker.sock &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;which docker&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;:/usr/bin/docker jenkins
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Useful Docker Images</title>
+   <link href="http://localhost:4000/2015/12/13/useful-docker-images/"/>
+   <updated>2015-12-13T00:00:00+05:00</updated>
+   <id>http://localhost:4000/2015/12/13/useful-docker-images</id>
+   <content type="html">&lt;p&gt;Some useful Docker images which I use day to day for my work and non work related tasks.
+This include a torrent server, a file sharing server , youtube-dl with ui app and jenkings build server and Jekyll environment which I use to build this blog.&lt;/p&gt;
+
+&lt;p&gt;Here is the list.&lt;/p&gt;
+
+&lt;h3 id=&quot;transmissiion-control&quot;&gt;transmissiion control&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/odarriba/docker-transmission&quot;&gt;docker-transmission&lt;/a&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run -h transmission --name transmission -e USER=&amp;lt;user&amp;gt; -e PASSWORD=&amp;lt;password&amp;gt; -e IP_WHITELIST=*.*.*.* -d -v /home/ubuntu/downloads:/downloads -t -i -p 9091:9091 -p 51415:51413/udp -p 51415:51413/tcp transmission
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;change permissions of download folder (on host) to 755 and make non-root user the owner of the download foler.&lt;/p&gt;
+
+&lt;h3 id=&quot;youtube-dl&quot;&gt;youtube dl&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/p1rox/Youtube-dl-WebUI&quot;&gt;Youtube-dl-WebUI&lt;/a&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run -d -p 9090:80 -v /home/ubuntu/Videos:/www/youtube-dl/downloads ytdlwui
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;dc-hub---ptokax&quot;&gt;dc hub - Ptokax&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/mbentley/dockerfiles&quot;&gt;Ptokax&lt;/a&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run -d -e HUB=192.168.23.101 -e NICK=admin -e PASSWORD=password -p 1209:1209 -p 411:411 ptokax
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;jenkins&quot;&gt;jenkins&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/jenkinsci/docker&quot;&gt;Official Image&lt;/a&gt;
+&lt;br /&gt;
+&lt;a href=&quot;https://github.com/junaidk/Jenkins-Docker-image&quot;&gt;Moodified with Java 7&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;jekyll-environment&quot;&gt;jekyll environment&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://hub.docker.com/r/grahamc/jekyll/&quot;&gt;jekyll&lt;/a&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run -d -v &quot;$(pwd):/src&quot; -p 4000:4000 grahamc/jekyll serve
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;run this in your jekyll blog root dir or replace $(pwd) with your blog root&lt;/p&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Edit a file on remote server in sublime text</title>
+   <link href="http://localhost:4000/2015/12/13/sublime-remote/"/>
+   <updated>2015-12-13T00:00:00+05:00</updated>
+   <id>http://localhost:4000/2015/12/13/sublime-remote</id>
+   <content type="html">&lt;p&gt;Using Secure Shell (SSH) Tunneling, we can establish an SSH session that routes arbitrary traffic through it to a specified port for any use we want.  Thanks to a nifty set of scripts called &lt;a href=&quot;https://github.com/Drarok/rsub&quot;&gt;rsub&lt;/a&gt;, modified originally from TextMate’s rmate, we can run a little utility server on our local machine that interacts with your remote server for you and lets you open up remote files and save them back, all through an encrypted channel.&lt;/p&gt;
+
+&lt;h3 id=&quot;download-rsub-for-sublime-text&quot;&gt;Download rsub for sublime text&lt;/h3&gt;
+&lt;p&gt;Go to your sublime text pluging directory&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;OS X &lt;code class=&quot;highlighter-rouge&quot;&gt;~/Library/Application Support/Sublime Text 3/Packages&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Linux &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.config/sublime-text-3/Packages &lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Windows &lt;code class=&quot;highlighter-rouge&quot;&gt;%APPDATA%/Roaming/Sublime Text 3/Packages/&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;and clone this git repe there.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone git://github.com/henrikpersson/rsub.git rsub
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;edit-ssh-config-on-local-machine&quot;&gt;Edit ssh config on local machine&lt;/h3&gt;
+
+&lt;p&gt;Add this line to ~/.ssh/config file ( create if not exist )&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;RemoteForward 52698 127.0.0.1:52698&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Set config file permission to 600&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;chmod 600 ~/.ssh/config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;remote-server-configuration&quot;&gt;Remote server configuration&lt;/h3&gt;
+&lt;p&gt;Install rsub on remote server&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget -O /usr/local/bin/rsub https://raw.github.com/aurora/rmate/master/rmate
+
+sudo chmod a+x /usr/local/bin/rsub
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;ssh-to-remote-server&quot;&gt;SSH to remote server&lt;/h3&gt;
+&lt;p&gt;Run this to create connection to remote server&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;sudo ssh -R 52698:localhost:52698 &amp;lt;user&amp;gt;@&amp;lt;host&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;open-a-file-to-edit&quot;&gt;Open a file to edit&lt;/h3&gt;
+&lt;p&gt;To edit any file on remote server do 
+&lt;code class=&quot;highlighter-rouge&quot;&gt;rsub &amp;lt;file name&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;it will open in subline on local machine&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Sublime Line Break Plugin</title>
+   <link href="http://localhost:4000/2015/01/11/sublime-line-break/"/>
+   <updated>2015-01-11T00:00:00+05:00</updated>
+   <id>http://localhost:4000/2015/01/11/sublime-line-break</id>
+   <content type="html">&lt;h4 id=&quot;introduction&quot;&gt;Introduction&lt;/h4&gt;
+&lt;p&gt;This is a sublime  plugin to copy multi line data from a selection to clipboard. There is a sublime shortcut (&lt;code class=&quot;highlighter-rouge&quot;&gt;ctrl+j&lt;/code&gt;) which do the same thing but do that in-place (changes the contents of file). This plugin copies the content but does not change the actual file.&lt;/p&gt;
+
+&lt;p&gt;for example&lt;/p&gt;
+
+&lt;p&gt;selection:&lt;/p&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;CREATE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;TABLE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;STATION&lt;/span&gt; 
+	&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ID&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;INTEGER&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;PRIMARY&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;KEY&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+	&lt;span class=&quot;n&quot;&gt;CITY&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CHAR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; 
+	&lt;span class=&quot;k&quot;&gt;STATE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CHAR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; 
+	&lt;span class=&quot;n&quot;&gt;LAT_N&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;REAL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+	&lt;span class=&quot;n&quot;&gt;LONG_W&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;REAL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;copied to clipboard:&lt;/p&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;CREATE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;TABLE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;STATION&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ID&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;INTEGER&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;PRIMARY&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;KEY&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CITY&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CHAR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;STATE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CHAR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LAT_N&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;REAL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LONG_W&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;REAL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;installation&quot;&gt;Installation&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;create new sublime pulgin with above code and save it in&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;OS X &lt;code class=&quot;highlighter-rouge&quot;&gt;~/Library/Application Support/Sublime Text 3/Packages/User/&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Linux &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.config/sublime-text-3/Packages/User/&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Windows &lt;code class=&quot;highlighter-rouge&quot;&gt;%APPDATA%/Roaming/Sublime Text 3/Packages/User/&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;in user key map add the following key binding&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	{ 
+		&quot;keys&quot;: [&quot;ctrl+alt+d&quot;],
+		&quot;command&quot;: &quot;line&quot;
+	}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;plugin-code&quot;&gt;Plugin code&lt;/h4&gt;
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sublime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sublime_plugin&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LineCommand&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sublime_plugin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TextCommand&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+		&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+		&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;region&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+			&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;region&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+
+				&lt;span class=&quot;n&quot;&gt;selection&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;substr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;region&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+				&lt;span class=&quot;n&quot;&gt;selection_mod&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;selection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;replace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;' '&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;replace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\r&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+				&lt;span class=&quot;n&quot;&gt;selection_mod&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot; &quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;selection_mod&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;split&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+			
+				&lt;span class=&quot;c&quot;&gt;#self.view.insert(edit, 0, selection_mod)	&lt;/span&gt;
+				&lt;span class=&quot;n&quot;&gt;sublime&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_clipboard&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;selection_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+				&lt;span class=&quot;n&quot;&gt;sublime&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;status_message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Selection with removed 'New Line Chars' copied to clipboard&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+				&lt;span class=&quot;c&quot;&gt;#sublime.message_dialog(&quot;\&quot;&quot; + selection_mod +&quot;\&quot;&quot; + &quot;copied to clipboard&quot;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Intellij Idea Shortcuts</title>
+   <link href="http://localhost:4000/2015/01/11/intellij-short-cuts/"/>
+   <updated>2015-01-11T00:00:00+05:00</updated>
+   <id>http://localhost:4000/2015/01/11/intellij-short-cuts</id>
+   <content type="html">&lt;p&gt;These are some of my most used keyboard short cuts&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Syntax aware selection in the editor selects a word at the caret and then selects expanding areas of the source code. For example, it may select a method name, then the expression that calls this method, then the whole statement, then the containing block, etc.: &lt;code class=&quot;highlighter-rouge&quot;&gt;Ctrl+W&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Basic Code Completion, to complete methods, keywords etc.:&lt;code class=&quot;highlighter-rouge&quot;&gt; Ctrl+Space&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Go to Declaration. Use this to navigate to the declaration of a class, method or variable used somewhere in the code: &lt;code class=&quot;highlighter-rouge&quot;&gt;Ctrl+B&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Introduce Variable Refactoring, to create a variable from an expression. This expression may even be incomplete or contain errors. Since version 8, IDEA intelligently selects a likely expression when no text is selected: &lt;code class=&quot;highlighter-rouge&quot;&gt;Ctrl+Alt+V&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Go to Class, to quickly open any class in the editor: &lt;code class=&quot;highlighter-rouge&quot;&gt;Ctrl+N&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;To open any file, not just classes: &lt;code class=&quot;highlighter-rouge&quot;&gt;Ctrl+Shift+N&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Comment/Uncomment current line or selection: &lt;code class=&quot;highlighter-rouge&quot;&gt;Ctrl+/ and Ctrl+Shift+/&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Quick JavaDoc Popup to show the JavaDoc of the method or class at the text cursor: &lt;code class=&quot;highlighter-rouge&quot;&gt;Ctrl+Q&lt;/code&gt; (Ctrl+J on Mac OS X)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Smart Type Completion to complete an expression with a method call or variable with a type suitable in the current Context: &lt;code class=&quot;highlighter-rouge&quot;&gt;Ctrl+Shift+Space&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Rename refactoring to rename any identifier. Can look in comments, text files and across different languages too:&lt;code class=&quot;highlighter-rouge&quot;&gt; Shift+F6&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Select in Popup to quickly select the currently edited element (class, file, method or field) in any view (Project View, Structure View or other): &lt;code class=&quot;highlighter-rouge&quot;&gt;Alt+F1&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Highlight Usages in File. Position the text cursor on any identifier without selecting any text and it will show all places in the file where that variable, method etc. is used. Use it on a throws, try or catch keyword to show all places where the exception is thrown. Use it on the implements keyword to highlight the methods of the implemented interface:&lt;code class=&quot;highlighter-rouge&quot;&gt; Ctrl+Shift+F7&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Add/remove a selection: Alt + Shift + Mouse Click&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Select/unselect the next occurrence: Alt + J / Shift + Alt + J (Ctrl + G / Shift + Ctrl + G) for Mac OS X)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Select all occurrences: Shift + Ctrl + Alt + J (Ctrl + Cmd + G for Mac OS X)&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</content>
+ </entry>
+ 
+
+</feed>
