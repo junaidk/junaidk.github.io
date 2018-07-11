@@ -10,8 +10,8 @@ relative_permalinks: true
 title:            Don't Panic
 tagline:          'Thoughts, stories and ideas'
 description:      'Thoughts, stories and ideas'
-url:              'http://junaidk.github.io/'
-baseurl:          /
+url:              
+baseurl:          
 
 author:
   name:           'Junaid K'
